@@ -1,12 +1,19 @@
-<h1 align="center">rip-go</h1>
+<p align="center">
+  <img src="public/SCR-20260108-vpj.png" alt="rip demo" width="200">
+</p>
 
 <p align="center">
   <i>Fuzzy find and kill processes from your terminal</i>
 </p>
 
 <p align="center">
-  <b>Go port of <a href="https://github.com/cesarferreira/rip">rip</a></b>
+  <img src="public/SCR-20260108-vo9.jpeg" alt="rip demo" width="700">
 </p>
+
+
+<div align="center">
+  <h3>Go port of <a href="https://github.com/cesarferreira/rip">rip</a></h3>
+</div>
 
 ---
 
@@ -61,4 +68,4 @@ rip-go --sort mem         # Sort by memory usage
 
 ## License
 
-MIT - Same as the original project.
+MIT
