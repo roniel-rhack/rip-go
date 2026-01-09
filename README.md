@@ -16,11 +16,20 @@ I think the original project is super cool, and I made this port just for fun an
 
 ## Installation
 
+### Homebrew (macOS/Linux)
+
 ```bash
-go install github.com/roniel-rhack/rip-go/cmd/rip@latest
+brew tap roniel-rhack/tap
+brew install rip-go
 ```
 
-Or build from source:
+### Go
+
+```bash
+go install github.com/roniel-rhack/rip-go/cmd/rip-go@latest
+```
+
+### Build from source
 
 ```bash
 git clone https://github.com/roniel-rhack/rip-go
