@@ -27,6 +27,7 @@ type Model struct {
 	signal       syscall.Signal
 	filterText   string
 	filtering    bool
+	paused       bool
 	quitting     bool
 	results      []string
 	width        int
@@ -167,6 +168,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.reSort()
 			}
 
+		case "p":
+			if !m.filtering {
+				m.paused = !m.paused
+			} else {
+				m.filterText += "p"
+				m.applyFilter()
+			}
+
 		default:
 			if m.filtering && len(msg.String()) == 1 {
 				m.filterText += msg.String()
@@ -181,7 +190,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case tickMsg:
-		if m.filtering {
+		if m.filtering || m.paused {
 			return m, m.scheduleNextTick()
 		}
 		return m, m.fetchProcessesCmd()
@@ -273,8 +282,11 @@ func (m Model) View() string {
 
 	selectedCount := len(m.selected)
 	status := ""
+	if m.paused {
+		status += PausedStyle.Render(" [PAUSED]")
+	}
 	if selectedCount > 0 {
-		status = SelectedCountStyle.Render(fmt.Sprintf(" %d selected", selectedCount))
+		status += SelectedCountStyle.Render(fmt.Sprintf(" %d selected", selectedCount))
 	}
 
 	help := m.renderHelp()
@@ -359,7 +371,7 @@ func (m Model) renderHelp() string {
 	if m.filtering {
 		return HelpStyle.Render("Type to filter • Enter to confirm • Esc to cancel")
 	}
-	return HelpStyle.Render("↑↓ navigate • Space select • Enter kill • / filter • 1-4 sort • q quit")
+	return HelpStyle.Render("↑↓ navigate • Space select • Enter kill • / filter • 1-4 sort • p pause • n clear • q quit")
 }
 
 func (m *Model) applyFilter() {

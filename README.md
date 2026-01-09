@@ -74,7 +74,8 @@ rip-go --sort mem         # Sort by memory usage
 | `3` | Sort by CPU |
 | `4` | Sort by Memory |
 | `a` | Select all |
-| `n` | Deselect all |
+| `n` | Deselect all (clear selection) |
+| `p` | Pause/resume real-time updates |
 | `q` / `Esc` | Quit |
 
 ## License
