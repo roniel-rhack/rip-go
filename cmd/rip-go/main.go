@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const Version = "0.1.0"
+const Version = "0.1.1"
 
 var (
 	filter    string
@@ -54,7 +54,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	model := tui.New(processes, sig, Version)
+	model := tui.New(processes, sig, Version, sortField)
 	p := tea.NewProgram(model, tea.WithAltScreen())
 
 	if _, err := p.Run(); err != nil {

@@ -62,6 +62,10 @@ rip-go --sort mem         # Sort by memory usage
 | `Space` | Select/deselect process |
 | `Enter` | Kill selected processes |
 | `/` | Filter mode |
+| `1` | Sort by CPU |
+| `2` | Sort by Memory |
+| `3` | Sort by PID |
+| `4` | Sort by Name |
 | `a` | Select all |
 | `n` | Deselect all |
 | `q` / `Esc` | Quit |

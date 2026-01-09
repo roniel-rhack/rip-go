@@ -26,9 +26,10 @@ type Model struct {
 	nameWidth    int
 	scrollOffset int
 	version      string
+	sortField    process.SortField
 }
 
-func New(processes []process.Info, sig syscall.Signal, version string) Model {
+func New(processes []process.Info, sig syscall.Signal, version string, sortField process.SortField) Model {
 	filtered := make([]int, len(processes))
 	for i := range processes {
 		filtered[i] = i
@@ -43,6 +44,7 @@ func New(processes []process.Info, sig syscall.Signal, version string) Model {
 		height:    24,
 		nameWidth: 35,
 		version:   version,
+		sortField: sortField,
 	}
 }
 
@@ -138,6 +140,30 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.applyFilter()
 			}
 
+		case "1":
+			if !m.filtering {
+				m.sortField = process.SortByCPU
+				m.reSort()
+			}
+
+		case "2":
+			if !m.filtering {
+				m.sortField = process.SortByMem
+				m.reSort()
+			}
+
+		case "3":
+			if !m.filtering {
+				m.sortField = process.SortByPID
+				m.reSort()
+			}
+
+		case "4":
+			if !m.filtering {
+				m.sortField = process.SortByName
+				m.reSort()
+			}
+
 		default:
 			if m.filtering && len(msg.String()) == 1 {
 				m.filterText += msg.String()
@@ -224,10 +250,26 @@ func (m Model) renderBanner() string {
 }
 
 func (m Model) renderHeader() string {
-	pidCol := HeaderStyle.Render(fmt.Sprintf("%-7s", "PID"))
-	nameCol := HeaderStyle.Render(fmt.Sprintf("%-*s", m.nameWidth, "NAME"))
-	cpuCol := HeaderStyle.Render(fmt.Sprintf("%6s", "CPU %"))
-	memCol := HeaderStyle.Render(fmt.Sprintf("%9s", "MEMORY"))
+	pidLabel := "PID"
+	nameLabel := "NAME"
+	cpuLabel := "CPU %"
+	memLabel := "MEMORY"
+
+	switch m.sortField {
+	case process.SortByCPU:
+		cpuLabel = "CPU %▼"
+	case process.SortByMem:
+		memLabel = "MEMORY▼"
+	case process.SortByPID:
+		pidLabel = "PID▼"
+	case process.SortByName:
+		nameLabel = "NAME▼"
+	}
+
+	pidCol := HeaderStyle.Render(fmt.Sprintf("%-7s", pidLabel))
+	nameCol := HeaderStyle.Render(fmt.Sprintf("%-*s", m.nameWidth, nameLabel))
+	cpuCol := HeaderStyle.Render(fmt.Sprintf("%7s", cpuLabel))
+	memCol := HeaderStyle.Render(fmt.Sprintf("%9s", memLabel))
 	return fmt.Sprintf("      %s %s %s %s", pidCol, nameCol, cpuCol, memCol)
 }
 
@@ -276,7 +318,7 @@ func (m Model) renderHelp() string {
 	if m.filtering {
 		return HelpStyle.Render("Type to filter • Enter to confirm • Esc to cancel")
 	}
-	return HelpStyle.Render("↑↓ navigate • Space select • Enter kill • / filter • a all • n none • q quit")
+	return HelpStyle.Render("↑↓ navigate • Space select • Enter kill • / filter • 1-4 sort • q quit")
 }
 
 func (m *Model) applyFilter() {
@@ -301,6 +343,13 @@ func (m *Model) applyFilter() {
 	if m.cursor < 0 {
 		m.cursor = 0
 	}
+	m.scrollOffset = 0
+}
+
+func (m *Model) reSort() {
+	process.SortProcesses(m.processes, m.sortField)
+	m.applyFilter()
+	m.cursor = 0
 	m.scrollOffset = 0
 }
 
