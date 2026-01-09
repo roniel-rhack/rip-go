@@ -4,12 +4,20 @@ import (
 	"fmt"
 	"strings"
 	"syscall"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/roniel-rhack/rip-go/internal/process"
 	"github.com/roniel-rhack/rip-go/internal/signal"
 )
+
+type tickMsg time.Time
+
+type processesMsg struct {
+	processes []process.Info
+	err       error
+}
 
 type Model struct {
 	processes    []process.Info
@@ -29,15 +37,10 @@ type Model struct {
 	sortField    process.SortField
 }
 
-func New(processes []process.Info, sig syscall.Signal, version string, sortField process.SortField) Model {
-	filtered := make([]int, len(processes))
-	for i := range processes {
-		filtered[i] = i
-	}
-
+func New(sig syscall.Signal, version string, sortField process.SortField) Model {
 	return Model{
-		processes: processes,
-		filtered:  filtered,
+		processes: nil,
+		filtered:  []int{},
 		selected:  make(map[int32]bool),
 		signal:    sig,
 		width:     80,
@@ -49,7 +52,7 @@ func New(processes []process.Info, sig syscall.Signal, version string, sortField
 }
 
 func (m Model) Init() tea.Cmd {
-	return nil
+	return m.fetchProcessesCmd()
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -176,6 +179,39 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		m.nameWidth = m.calculateNameWidth()
 		return m, nil
+
+	case tickMsg:
+		if m.filtering {
+			return m, m.scheduleNextTick()
+		}
+		return m, m.fetchProcessesCmd()
+
+	case processesMsg:
+		if msg.err != nil {
+			return m, m.scheduleNextTick()
+		}
+		var cursorPID int32
+		if len(m.filtered) > 0 && m.cursor < len(m.filtered) {
+			cursorPID = m.processes[m.filtered[m.cursor]].PID
+		}
+		m.processes = msg.processes
+		m.applyFilter()
+		if cursorPID != 0 {
+			for i, idx := range m.filtered {
+				if m.processes[idx].PID == cursorPID {
+					m.cursor = i
+					m.ensureVisible()
+					return m, m.scheduleNextTick()
+				}
+			}
+		}
+		if m.cursor >= len(m.filtered) {
+			m.cursor = len(m.filtered) - 1
+		}
+		if m.cursor < 0 {
+			m.cursor = 0
+		}
+		return m, m.scheduleNextTick()
 	}
 
 	return m, nil
@@ -195,6 +231,11 @@ func (m Model) View() string {
 	banner := m.renderBanner()
 	b.WriteString(banner)
 	b.WriteString("\n\n")
+
+	if len(m.processes) == 0 {
+		b.WriteString(DimStyle.Render("Loading processes..."))
+		return b.String()
+	}
 
 	header := m.renderHeader()
 	b.WriteString(header)
@@ -337,12 +378,7 @@ func (m *Model) applyFilter() {
 		}
 	}
 
-	if m.cursor >= len(m.filtered) {
-		m.cursor = len(m.filtered) - 1
-	}
-	if m.cursor < 0 {
-		m.cursor = 0
-	}
+	m.cursor = 0
 	m.scrollOffset = 0
 }
 
@@ -396,4 +432,18 @@ func (m *Model) killSelected() {
 			}
 		}
 	}
+}
+
+func (m Model) fetchProcessesCmd() tea.Cmd {
+	sortField := m.sortField
+	return func() tea.Msg {
+		procs, err := process.GetProcesses("", sortField)
+		return processesMsg{processes: procs, err: err}
+	}
+}
+
+func (m Model) scheduleNextTick() tea.Cmd {
+	return tea.Tick(time.Second, func(t time.Time) tea.Msg {
+		return tickMsg(t)
+	})
 }

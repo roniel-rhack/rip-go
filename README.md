@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <i>Fuzzy find and kill processes from your terminal</i>
+  <i>Fuzzy find and kill processes from your terminal with real-time updates</i>
 </p>
 
 <p align="center">
@@ -45,11 +45,18 @@ make build
 ./bin/rip-go
 ```
 
+## Features
+
+- Real-time process monitoring (updates every second)
+- Fuzzy filtering with `/`
+- Multi-select processes
+- Sort by PID, Name, CPU, or Memory
+- Vim-style navigation
+
 ## Usage
 
 ```bash
 rip-go                    # List all processes (sorted by CPU)
-rip-go -f chrome          # Pre-filter by process name
 rip-go -s TERM            # Use SIGTERM instead of SIGKILL
 rip-go --sort mem         # Sort by memory usage
 ```
