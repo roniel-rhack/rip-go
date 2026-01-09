@@ -76,3 +76,14 @@ jobs:
             artifacts/*.tar.gz
             artifacts/checksums.txt
           generate_release_notes: true
+
+      - name: Trigger Homebrew formula update
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            https://api.github.com/repos/roniel-rhack/homebrew-tap/dispatches \
+            -d "{\"event_type\":\"rip-go-release\",\"client_payload\":{\"version\":\"${TAG_NAME}\"}}"
