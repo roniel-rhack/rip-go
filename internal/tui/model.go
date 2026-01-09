@@ -142,25 +142,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "1":
 			if !m.filtering {
-				m.sortField = process.SortByCPU
+				m.sortField = process.SortByPID
 				m.reSort()
 			}
 
 		case "2":
 			if !m.filtering {
-				m.sortField = process.SortByMem
+				m.sortField = process.SortByName
 				m.reSort()
 			}
 
 		case "3":
 			if !m.filtering {
-				m.sortField = process.SortByPID
+				m.sortField = process.SortByCPU
 				m.reSort()
 			}
 
 		case "4":
 			if !m.filtering {
-				m.sortField = process.SortByName
+				m.sortField = process.SortByMem
 				m.reSort()
 			}
 
