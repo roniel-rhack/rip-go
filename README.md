@@ -10,19 +10,7 @@
   <img src="public/SCR-20260109-vmy.png" alt="rip demo" width="700">
 </p>
 
-
-<div align="center">
-  <h3>Go port of <a href="https://github.com/cesarferreira/rip">rip</a></h3>
-</div>
-
 ---
-
-This is a Go version of the awesome [rip](https://github.com/cesarferreira/rip)
-by [@cesarferreira](https://github.com/cesarferreira).
-
-The original idea and concept belong entirely to [@cesarferreira](https://github.com/cesarferreira). This port builds
-upon that foundation by adding additional features like real-time process monitoring, multi-select capabilities, and
-runtime signal switching. All credit for the original concept goes to the original author.
 
 ## Installation
 
@@ -91,6 +79,17 @@ rip-go --sort mem         # Sort by memory usage
 - [ ] Show full command line (not just process name)
 - [ ] Search by PID (currently only filters by name)
 - [ ] Highlight newly appeared processes
+
+---
+
+This is a Go version of the awesome [rip](https://github.com/cesarferreira/rip)
+by [@cesarferreira](https://github.com/cesarferreira).
+
+The original idea and concept belong entirely to [@cesarferreira](https://github.com/cesarferreira). This port builds
+upon that foundation by adding additional features like real-time process monitoring, multi-select capabilities, and
+runtime signal switching. All credit for the original concept goes to the original author.
+
+---
 
 ## License
 
