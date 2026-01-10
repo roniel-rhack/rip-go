@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="public/SCR-20260109-rqu.jpeg" alt="rip demo" width="700">
+  <img src="public/SCR-20260109-vmy.png" alt="rip demo" width="700">
 </p>
 
 
@@ -77,7 +77,7 @@ rip-go --sort mem         # Sort by memory usage
 | `4` | Sort by Memory |
 | `s` | Cycle signal (KILL→TERM→INT→HUP→QUIT) |
 | `a` | Select all |
-| `n` | Deselect all (clear selection) |
+| `c` | Clear selection |
 | `p` | Pause/resume real-time updates |
 | `q` / `Esc` | Quit |
 

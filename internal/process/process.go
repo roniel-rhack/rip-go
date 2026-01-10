@@ -77,19 +77,7 @@ func GetProcesses(filter string, sortBy SortField) ([]Info, error) {
 		})
 	}
 
-	switch sortBy {
-	case SortByCPU:
-		sort.Slice(result, func(i, j int) bool { return result[i].CPU > result[j].CPU })
-	case SortByMem:
-		sort.Slice(result, func(i, j int) bool { return result[i].Memory > result[j].Memory })
-	case SortByPID:
-		sort.Slice(result, func(i, j int) bool { return result[i].PID < result[j].PID })
-	case SortByName:
-		sort.Slice(result, func(i, j int) bool {
-			return strings.ToLower(result[i].Name) < strings.ToLower(result[j].Name)
-		})
-	}
-
+	SortProcesses(result, sortBy)
 	return result, nil
 }
 

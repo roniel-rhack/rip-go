@@ -117,7 +117,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case " ":
-			if !m.filtering && len(m.filtered) > 0 {
+			if !m.filtering && len(m.filtered) > 0 && m.cursor < len(m.filtered) {
 				idx := m.filtered[m.cursor]
 				pid := m.processes[idx].PID
 				if m.selected[pid] {
@@ -140,8 +140,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "y":
 			if m.confirming {
 				m.killSelected()
-				m.quitting = true
-				return m, tea.Quit
+				m.confirming = false
+				m.selected = make(map[int32]bool)
 			} else if m.filtering {
 				m.filterText += "y"
 				m.applyFilter()
@@ -150,34 +150,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "n":
 			if m.confirming {
 				m.confirming = false
-			} else if !m.filtering {
-				m.selected = make(map[int32]bool)
-			} else {
+			} else if m.filtering {
 				m.filterText += "n"
 				m.applyFilter()
 			}
 
-		case "1":
-			if !m.filtering {
-				m.sortField = process.SortByPID
-				m.reSort()
+		case "c":
+			if !m.filtering && !m.confirming {
+				m.selected = make(map[int32]bool)
+			} else if m.filtering {
+				m.filterText += "c"
+				m.applyFilter()
 			}
 
-		case "2":
+		case "1", "2", "3", "4":
 			if !m.filtering {
-				m.sortField = process.SortByName
-				m.reSort()
-			}
-
-		case "3":
-			if !m.filtering {
-				m.sortField = process.SortByCPU
-				m.reSort()
-			}
-
-		case "4":
-			if !m.filtering {
-				m.sortField = process.SortByMem
+				sortFields := map[string]process.SortField{
+					"1": process.SortByPID,
+					"2": process.SortByName,
+					"3": process.SortByCPU,
+					"4": process.SortByMem,
+				}
+				m.sortField = sortFields[msg.String()]
 				m.reSort()
 			}
 
@@ -403,7 +397,7 @@ func (m Model) renderHelp() string {
 	if m.confirming {
 		return HelpStyle.Render("y confirm • n cancel")
 	}
-	return HelpStyle.Render("↑↓ navigate • Space select • Enter kill • / filter • 1-4 sort • s signal • p pause • n clear • q quit")
+	return HelpStyle.Render("↑↓ navigate • Space select • Enter kill • / filter • 1-4 sort • s signal • p pause • c clear • q quit")
 }
 
 func (m *Model) applyFilter() {
@@ -429,8 +423,6 @@ func (m *Model) applyFilter() {
 func (m *Model) reSort() {
 	process.SortProcesses(m.processes, m.sortField)
 	m.applyFilter()
-	m.cursor = 0
-	m.scrollOffset = 0
 }
 
 func (m *Model) ensureVisible() {
@@ -459,21 +451,27 @@ func (m Model) calculateNameWidth() int {
 }
 
 func (m *Model) killSelected() {
-	for _, proc := range m.processes {
-		if m.selected[proc.PID] {
-			err := signal.Kill(int(proc.PID), m.signal)
-			if err != nil {
-				m.results = append(m.results,
-					ErrorStyle.Render("Failed")+" "+
-						lipgloss.NewStyle().Bold(true).Render(proc.Name)+" "+
-						DimStyle.Render(fmt.Sprintf("(PID: %d)", proc.PID))+": "+
-						err.Error())
-			} else {
-				m.results = append(m.results,
-					SuccessStyle.Render("Killed")+" "+
-						lipgloss.NewStyle().Bold(true).Render(proc.Name)+" "+
-						DimStyle.Render(fmt.Sprintf("(PID: %d)", proc.PID)))
+	for pid := range m.selected {
+		procName := fmt.Sprintf("PID %d", pid)
+		for _, proc := range m.processes {
+			if proc.PID == pid {
+				procName = proc.Name
+				break
 			}
+		}
+
+		err := signal.Kill(int(pid), m.signal)
+		if err != nil {
+			m.results = append(m.results,
+				ErrorStyle.Render("Failed")+" "+
+					lipgloss.NewStyle().Bold(true).Render(procName)+" "+
+					DimStyle.Render(fmt.Sprintf("(PID: %d)", pid))+": "+
+					err.Error())
+		} else {
+			m.results = append(m.results,
+				SuccessStyle.Render("Killed")+" "+
+					lipgloss.NewStyle().Bold(true).Render(procName)+" "+
+					DimStyle.Render(fmt.Sprintf("(PID: %d)", pid)))
 		}
 	}
 }
