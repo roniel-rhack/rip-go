@@ -17,9 +17,12 @@
 
 ---
 
-This is a Go version of the awesome [rip](https://github.com/cesarferreira/rip) by [@cesarferreira](https://github.com/cesarferreira).
+This is a Go version of the awesome [rip](https://github.com/cesarferreira/rip)
+by [@cesarferreira](https://github.com/cesarferreira).
 
-I think the original project is super cool, and I made this port just for fun and practice. All credit goes to the original author.
+The original idea and concept belong entirely to [@cesarferreira](https://github.com/cesarferreira). This port builds
+upon that foundation by adding additional features like real-time process monitoring, multi-select capabilities, and
+runtime signal switching. All credit for the original concept goes to the original author.
 
 ## Installation
 
