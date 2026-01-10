@@ -51,6 +51,8 @@ make build
 - Fuzzy filtering with `/`
 - Multi-select processes
 - Sort by PID, Name, CPU, or Memory
+- Runtime signal switching (KILL, TERM, INT, HUP, QUIT)
+- Kill confirmation dialog
 - Vim-style navigation
 
 ## Usage
@@ -67,16 +69,25 @@ rip-go --sort mem         # Sort by memory usage
 |-----|--------|
 | `↑` `↓` / `k` `j` | Navigate |
 | `Space` | Select/deselect process |
-| `Enter` | Kill selected processes |
+| `Enter` | Kill selected (with confirmation) |
 | `/` | Filter mode |
 | `1` | Sort by PID |
 | `2` | Sort by Name |
 | `3` | Sort by CPU |
 | `4` | Sort by Memory |
+| `s` | Cycle signal (KILL→TERM→INT→HUP→QUIT) |
 | `a` | Select all |
 | `n` | Deselect all (clear selection) |
 | `p` | Pause/resume real-time updates |
 | `q` / `Esc` | Quit |
+
+## TODO
+
+- [ ] Filter by user (`-u` flag to show only processes from current/specific user)
+- [ ] Process tree view (show parent-child hierarchy)
+- [ ] Show full command line (not just process name)
+- [ ] Search by PID (currently only filters by name)
+- [ ] Highlight newly appeared processes
 
 ## License
 

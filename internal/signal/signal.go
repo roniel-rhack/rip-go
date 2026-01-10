@@ -37,3 +37,20 @@ func Parse(s string) (syscall.Signal, error) {
 func Kill(pid int, sig syscall.Signal) error {
 	return syscall.Kill(pid, sig)
 }
+
+func Name(sig syscall.Signal) string {
+	switch sig {
+	case syscall.SIGKILL:
+		return "SIGKILL"
+	case syscall.SIGTERM:
+		return "SIGTERM"
+	case syscall.SIGINT:
+		return "SIGINT"
+	case syscall.SIGHUP:
+		return "SIGHUP"
+	case syscall.SIGQUIT:
+		return "SIGQUIT"
+	default:
+		return "UNKNOWN"
+	}
+}

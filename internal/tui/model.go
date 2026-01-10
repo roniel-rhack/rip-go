@@ -27,6 +27,7 @@ type Model struct {
 	signal       syscall.Signal
 	filterText   string
 	filtering    bool
+	confirming   bool
 	paused       bool
 	quitting     bool
 	results      []string
@@ -73,7 +74,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.applyFilter()
 
 		case "esc":
-			if m.filtering {
+			if m.confirming {
+				m.confirming = false
+			} else if m.filtering {
 				m.filtering = false
 				m.filterText = ""
 				m.applyFilter()
@@ -97,10 +100,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			if m.filtering {
 				m.filtering = false
-			} else if len(m.selected) > 0 {
-				m.killSelected()
-				m.quitting = true
-				return m, tea.Quit
+			} else if len(m.selected) > 0 && !m.confirming {
+				m.confirming = true
 			}
 
 		case "up", "k":
@@ -136,8 +137,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.applyFilter()
 			}
 
+		case "y":
+			if m.confirming {
+				m.killSelected()
+				m.quitting = true
+				return m, tea.Quit
+			} else if m.filtering {
+				m.filterText += "y"
+				m.applyFilter()
+			}
+
 		case "n":
-			if !m.filtering {
+			if m.confirming {
+				m.confirming = false
+			} else if !m.filtering {
 				m.selected = make(map[int32]bool)
 			} else {
 				m.filterText += "n"
@@ -169,10 +182,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case "p":
-			if !m.filtering {
+			if !m.filtering && !m.confirming {
 				m.paused = !m.paused
-			} else {
+			} else if m.filtering {
 				m.filterText += "p"
+				m.applyFilter()
+			}
+
+		case "s":
+			if !m.filtering && !m.confirming {
+				m.signal = nextSignal(m.signal)
+			} else if m.filtering {
+				m.filterText += "s"
 				m.applyFilter()
 			}
 
@@ -289,6 +310,12 @@ func (m Model) View() string {
 		status += SelectedCountStyle.Render(fmt.Sprintf(" %d selected", selectedCount))
 	}
 
+	if m.confirming {
+		sigName := signal.Name(m.signal)
+		dialog := ConfirmStyle.Render(fmt.Sprintf("Kill %d process(es) with %s? (y/n)", selectedCount, sigName))
+		b.WriteString("\n" + dialog)
+	}
+
 	help := m.renderHelp()
 	b.WriteString("\n" + help + status)
 
@@ -299,7 +326,9 @@ func (m Model) renderBanner() string {
 	logo := "█▀█ █ █▀█ ─ █▀▀ █▀█"
 	sub := "█▀▄ █ █▀▀   █▄█ █▄█"
 	version := VersionStyle.Render(" v" + m.version)
-	return BannerStyle.Render(logo) + version + "\n" + BannerStyle.Render(sub)
+	sigName := signal.Name(m.signal)
+	sigInfo := SignalStyle.Render(" [" + sigName + "]")
+	return BannerStyle.Render(logo) + version + sigInfo + "\n" + BannerStyle.Render(sub)
 }
 
 func (m Model) renderHeader() string {
@@ -371,7 +400,10 @@ func (m Model) renderHelp() string {
 	if m.filtering {
 		return HelpStyle.Render("Type to filter • Enter to confirm • Esc to cancel")
 	}
-	return HelpStyle.Render("↑↓ navigate • Space select • Enter kill • / filter • 1-4 sort • p pause • n clear • q quit")
+	if m.confirming {
+		return HelpStyle.Render("y confirm • n cancel")
+	}
+	return HelpStyle.Render("↑↓ navigate • Space select • Enter kill • / filter • 1-4 sort • s signal • p pause • n clear • q quit")
 }
 
 func (m *Model) applyFilter() {
@@ -458,4 +490,20 @@ func (m Model) scheduleNextTick() tea.Cmd {
 	return tea.Tick(time.Second, func(t time.Time) tea.Msg {
 		return tickMsg(t)
 	})
+}
+
+func nextSignal(current syscall.Signal) syscall.Signal {
+	signals := []syscall.Signal{
+		syscall.SIGKILL,
+		syscall.SIGTERM,
+		syscall.SIGINT,
+		syscall.SIGHUP,
+		syscall.SIGQUIT,
+	}
+	for i, sig := range signals {
+		if sig == current {
+			return signals[(i+1)%len(signals)]
+		}
+	}
+	return syscall.SIGKILL
 }

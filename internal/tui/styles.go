@@ -29,4 +29,6 @@ var (
 	SuccessStyle         = lipgloss.NewStyle().Foreground(lipgloss.Color("42"))
 	ErrorStyle           = lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
 	PausedStyle          = lipgloss.NewStyle().Foreground(lipgloss.Color("214")).Bold(true)
+	ConfirmStyle         = lipgloss.NewStyle().Foreground(lipgloss.Color("226")).Bold(true)
+	SignalStyle          = lipgloss.NewStyle().Foreground(lipgloss.Color("39"))
 )
