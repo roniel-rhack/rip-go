@@ -104,16 +104,34 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.confirming = true
 			}
 
-		case "up", "k":
+		case "up":
 			if !m.filtering && m.cursor > 0 {
 				m.cursor--
 				m.ensureVisible()
 			}
 
-		case "down", "j":
+		case "k":
+			if !m.filtering && m.cursor > 0 {
+				m.cursor--
+				m.ensureVisible()
+			} else if m.filtering {
+				m.filterText += "k"
+				m.applyFilter()
+			}
+
+		case "down":
 			if !m.filtering && m.cursor < len(m.filtered)-1 {
 				m.cursor++
 				m.ensureVisible()
+			}
+
+		case "j":
+			if !m.filtering && m.cursor < len(m.filtered)-1 {
+				m.cursor++
+				m.ensureVisible()
+			} else if m.filtering {
+				m.filterText += "j"
+				m.applyFilter()
 			}
 
 		case " ":
@@ -125,6 +143,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					m.selected[pid] = true
 				}
+			} else if m.filtering {
+				m.filterText += " "
+				m.applyFilter()
 			}
 
 		case "a":
@@ -173,6 +194,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				m.sortField = sortFields[msg.String()]
 				m.reSort()
+			} else {
+				m.filterText += msg.String()
+				m.applyFilter()
 			}
 
 		case "p":
